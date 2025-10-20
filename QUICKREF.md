@@ -56,7 +56,7 @@ cp Formula/example-tool.rb Formula/my-tool.rb
 vim Formula/my-tool.rb
 
 # 5. Get SHA256 checksum
-wget https://github.com/owner/repo/archive/refs/tags/v1.0.0.tar.gz
+curl -L -o v1.0.0.tar.gz https://github.com/owner/repo/archive/refs/tags/v1.0.0.tar.gz
 shasum -a 256 v1.0.0.tar.gz
 
 # 6. Test the formula
@@ -82,7 +82,7 @@ git checkout -b update-tool-version
 vim Formula/tool-name.rb
 
 # 3. Get new SHA256
-wget https://github.com/owner/repo/archive/refs/tags/v2.0.0.tar.gz
+curl -L -o v2.0.0.tar.gz https://github.com/owner/repo/archive/refs/tags/v2.0.0.tar.gz
 shasum -a 256 v2.0.0.tar.gz
 
 # 4. Update formula
