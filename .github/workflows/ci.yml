@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: Audit
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@b2da65092292aade9599608fc29415389641b3cb
+
+      - name: Tap repository
+        run: |
+          mkdir -p $(brew --repository)/Library/Taps/calebsargeant
+          ln -s $GITHUB_WORKSPACE $(brew --repository)/Library/Taps/calebsargeant/homebrew-tap
+
+      - name: Audit formulas
+        run: |
+          for formula in Formula/*.rb; do
+            [ -f "$formula" ] || continue
+            formula_name=$(basename "$formula" .rb)
+
+            # Skip example formula
+            if [ "$formula_name" = "example-tool" ]; then
+              echo "Skipping example formula: $formula_name"
+              continue
+            fi
+
+            echo "::group::Auditing $formula_name"
+            brew audit --strict --online "$formula_name" || exit 1
+            echo "::endgroup::"
+          done
+
+  style:
+    name: Style Check
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@b2da65092292aade9599608fc29415389641b3cb
+
+      - name: Check formula style
+        run: |
+          for formula in Formula/*.rb; do
+            [ -f "$formula" ] || continue
+            echo "::group::Style check $(basename "$formula")"
+            brew style "$formula" || exit 1
+            echo "::endgroup::"
+          done
+
+  markdown-lint:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Lint Markdown files
+        uses: DavidAnson/markdownlint-cli2-action@b4c9feab76d8025d1e83c653fa3990936df0e6c8 # v16.0.0
+        with:
+          globs: '**/*.md'
+          config: '.markdownlint.json'
+        continue-on-error: true
