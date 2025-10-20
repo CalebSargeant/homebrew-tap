@@ -1,0 +1,36 @@
+{
+  "tap": "CalebSargeant/tap",
+  "formula_namespace": "CalebSargeant",
+  "maintainers": [
+    {
+      "name": "Caleb Sargeant",
+      "github": "CalebSargeant"
+    }
+  ],
+  "homepage": "https://github.com/CalebSargeant/homebrew-tap",
+  "description": "Centralised Homebrew tap for various CLI tools with automated updates",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CalebSargeant/homebrew-tap.git"
+  },
+  "formulas": {
+    "example-tool": {
+      "description": "Example CLI tool template",
+      "homepage": "https://github.com/CalebSargeant/example-tool",
+      "version": "1.0.0",
+      "status": "template"
+    }
+  },
+  "auto_update": {
+    "enabled": true,
+    "schedule": "daily",
+    "verify_checksum": true
+  },
+  "ci": {
+    "enabled": true,
+    "platforms": ["macos-13", "macos-14"],
+    "audit": true,
+    "test": true
+  }
+}
