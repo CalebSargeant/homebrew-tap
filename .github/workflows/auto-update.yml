@@ -52,8 +52,29 @@ jobs:
               
               echo "Checking for updates to $formula_name..."
               
-              # Attempt to update using brew livecheck and bump-formula-pr
-              if brew livecheck "$formula_name" | grep -q "outdated"; then
+              # Attempt to update using brew livecheck (JSON) and bump-formula-pr
+              json_output=$(brew livecheck --json --formula "$formula_name" 2>/dev/null || echo "[]")
+              is_outdated=$(echo "$json_output" | python3 - "$formula_name" <<'PY'
+import sys, json
+try:
+    data = json.load(sys.stdin)
+except Exception:
+    print("false"); sys.exit(0)
+if isinstance(data, dict):
+    data = [data]
+
+def outdated(item):
+    s = (item.get('status') or item.get('livecheck',{}).get('status') or '').lower()
+    if s == 'outdated':
+        return True
+    cur = item.get('version') or item.get('current')
+    latest = item.get('latest') or item.get('newer_version') or item.get('latest_version')
+    return (cur and latest and str(cur) != str(latest))
+
+print('true' if any(outdated(it) for it in data) else 'false')
+PY
+)
+              if [ "$is_outdated" = "true" ]; then
                 echo "Update available for $formula_name"
                 
                 # Try to bump the formula

@@ -35,6 +35,13 @@ jobs:
           for formula in Formula/*.rb; do
             if [ -f "$formula" ]; then
               formula_name=$(basename "$formula" .rb)
+
+              # Skip example formula
+              if [ "$formula_name" = "example-tool" ]; then
+                echo "Skipping example formula: $formula_name"
+                continue
+              fi
+
               echo "Auditing $formula_name..."
               brew audit --strict --online "$formula_name" || exit 1
             fi

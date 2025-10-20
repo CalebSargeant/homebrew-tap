@@ -14,7 +14,7 @@ on:
 jobs:
   test:
     name: Test Formulas
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
     
     strategy:
       matrix:

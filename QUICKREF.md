@@ -319,7 +319,7 @@ ruby -c Formula/tool-name.rb
 
 # Manual test
 brew install tool-name
-/usr/local/bin/tool-name --version
+tool-name --version
 ```
 
 ## GitHub CLI Commands
