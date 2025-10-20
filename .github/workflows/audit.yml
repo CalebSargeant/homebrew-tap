@@ -1,0 +1,51 @@
+name: Formula Audit
+
+on:
+  pull_request:
+    paths:
+      - 'Formula/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'Formula/**'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: Audit Formulas
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Tap repository
+        run: |
+          mkdir -p $(brew --repository)/Library/Taps/calebsargeant
+          ln -s $GITHUB_WORKSPACE $(brew --repository)/Library/Taps/calebsargeant/homebrew-tap
+
+      - name: Run brew audit
+        run: |
+          set -e
+          for formula in Formula/*.rb; do
+            if [ -f "$formula" ]; then
+              formula_name=$(basename "$formula" .rb)
+              echo "Auditing $formula_name..."
+              brew audit --strict --online "$formula_name" || exit 1
+            fi
+          done
+
+      - name: Run brew style
+        run: |
+          set -e
+          for formula in Formula/*.rb; do
+            if [ -f "$formula" ]; then
+              echo "Checking style for $formula..."
+              brew style "$formula" || exit 1
+            fi
+          done

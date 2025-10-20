@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: Audit
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Tap repository
+        run: |
+          mkdir -p $(brew --repository)/Library/Taps/calebsargeant
+          ln -s $GITHUB_WORKSPACE $(brew --repository)/Library/Taps/calebsargeant/homebrew-tap
+
+      - name: Audit formulas
+        run: |
+          for formula in Formula/*.rb; do
+            [ -f "$formula" ] || continue
+            formula_name=$(basename "$formula" .rb)
+            echo "::group::Auditing $formula_name"
+            brew audit --strict --online "$formula_name" || exit 1
+            echo "::endgroup::"
+          done
+
+  style:
+    name: Style Check
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Check formula style
+        run: |
+          for formula in Formula/*.rb; do
+            [ -f "$formula" ] || continue
+            echo "::group::Style check $(basename "$formula")"
+            brew style "$formula" || exit 1
+            echo "::endgroup::"
+          done
+
+  markdown-lint:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Lint Markdown files
+        uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          globs: '**/*.md'
+          config: '.markdownlint.json'
+        continue-on-error: true

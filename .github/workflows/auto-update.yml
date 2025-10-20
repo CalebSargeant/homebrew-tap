@@ -1,0 +1,104 @@
+name: Auto Update Formulas
+
+on:
+  schedule:
+    # Run daily at 02:00 UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    name: Check for Updates
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Tap repository
+        run: |
+          mkdir -p $(brew --repository)/Library/Taps/calebsargeant
+          ln -s $GITHUB_WORKSPACE $(brew --repository)/Library/Taps/calebsargeant/homebrew-tap
+
+      - name: Check for formula updates
+        id: check-updates
+        run: |
+          set -e
+          updated_formulas=""
+          
+          for formula in Formula/*.rb; do
+            if [ -f "$formula" ]; then
+              formula_name=$(basename "$formula" .rb)
+              
+              # Skip example formula
+              if [ "$formula_name" = "example-tool" ]; then
+                echo "Skipping example formula: $formula_name"
+                continue
+              fi
+              
+              echo "Checking for updates to $formula_name..."
+              
+              # Attempt to update using brew livecheck and bump-formula-pr
+              if brew livecheck "$formula_name" | grep -q "outdated"; then
+                echo "Update available for $formula_name"
+                
+                # Try to bump the formula
+                brew bump-formula-pr --no-browse --no-fork --write-only "$formula_name" || {
+                  echo "Failed to auto-update $formula_name, may require manual intervention"
+                  continue
+                }
+                
+                updated_formulas="${updated_formulas}${formula_name} "
+              else
+                echo "$formula_name is up to date"
+              fi
+            fi
+          done
+          
+          echo "updated=$updated_formulas" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        if: steps.check-updates.outputs.updated != ''
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: auto-update formulas"
+          title: "chore: Auto-update formulas"
+          body: |
+            ## Auto-generated Formula Updates
+            
+            This PR was automatically created by the auto-update workflow.
+            
+            **Updated formulas**: ${{ steps.check-updates.outputs.updated }}
+            
+            ### Checklist
+            - [x] Formulas updated with latest versions
+            - [x] SHA256 checksums updated
+            - [ ] Manual review required
+            - [ ] Tests pass
+            
+            Please review and merge if tests pass.
+          branch: auto-update-formulas
+          delete-branch: true
+          labels: |
+            automated
+            formula-update
+
+      - name: Summary
+        run: |
+          echo "Update check completed"
+          echo "Updated formulas: ${{ steps.check-updates.outputs.updated }}"

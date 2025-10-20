@@ -1,0 +1,123 @@
+name: Update SHA256 Checksums
+
+on:
+  workflow_dispatch:
+    inputs:
+      formula:
+        description: 'Formula name to update (leave empty for all)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-checksums:
+    name: Update SHA256 Checksums
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Tap repository
+        run: |
+          mkdir -p $(brew --repository)/Library/Taps/calebsargeant
+          ln -s $GITHUB_WORKSPACE $(brew --repository)/Library/Taps/calebsargeant/homebrew-tap
+
+      - name: Update checksums
+        id: update
+        run: |
+          set -e
+          updated=""
+          formula_input="${{ github.event.inputs.formula }}"
+          
+          if [ -n "$formula_input" ]; then
+            # Update specific formula
+            formulas="Formula/${formula_input}.rb"
+          else
+            # Update all formulas
+            formulas="Formula/*.rb"
+          fi
+          
+          for formula in $formulas; do
+            if [ -f "$formula" ]; then
+              formula_name=$(basename "$formula" .rb)
+              
+              # Skip example formula
+              if [ "$formula_name" = "example-tool" ]; then
+                echo "Skipping example formula: $formula_name"
+                continue
+              fi
+              
+              echo "Updating checksum for $formula_name..."
+              
+              # Fetch the formula to get correct SHA256
+              if brew fetch --force "$formula_name" 2>&1 | tee fetch_output.txt; then
+                # Extract SHA256 from fetch output
+                new_sha=$(grep "SHA256:" fetch_output.txt | awk '{print $2}' || echo "")
+                
+                if [ -n "$new_sha" ]; then
+                  # Update the formula file with new SHA256
+                  sed -i.bak "s/sha256 \"[^\"]*\"/sha256 \"$new_sha\"/" "$formula"
+                  rm -f "${formula}.bak"
+                  
+                  # Verify the change
+                  if git diff --quiet "$formula"; then
+                    echo "No changes needed for $formula_name"
+                  else
+                    echo "Updated $formula_name with SHA256: $new_sha"
+                    updated="${updated}${formula_name} "
+                  fi
+                else
+                  echo "Could not extract SHA256 for $formula_name"
+                fi
+              else
+                echo "Failed to fetch $formula_name"
+              fi
+              
+              rm -f fetch_output.txt
+            fi
+          done
+          
+          echo "updated=$updated" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        if: steps.update.outputs.updated != ''
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update SHA256 checksums"
+          title: "chore: Update SHA256 checksums"
+          body: |
+            ## SHA256 Checksum Updates
+            
+            This PR updates SHA256 checksums for formulas.
+            
+            **Updated formulas**: ${{ steps.update.outputs.updated }}
+            
+            ### Checklist
+            - [x] SHA256 checksums updated
+            - [ ] Manual review required
+            - [ ] Tests pass
+            
+            Please review and merge if tests pass.
+          branch: update-checksums
+          delete-branch: true
+          labels: |
+            automated
+            checksums
+
+      - name: Summary
+        run: |
+          echo "Checksum update completed"
+          echo "Updated formulas: ${{ steps.update.outputs.updated }}"
