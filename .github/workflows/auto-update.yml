@@ -54,7 +54,7 @@ jobs:
               
               # Attempt to update using brew livecheck (JSON) and bump-formula-pr
               json_output=$(brew livecheck --json --formula "$formula_name" 2>/dev/null || echo "[]")
-              is_outdated=$(echo "$json_output" | python3 - "$formula_name" <<'PY'
+              is_outdated=$(echo "$json_output" | python3 <<'PY'
 import sys, json
 try:
     data = json.load(sys.stdin)
