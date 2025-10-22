@@ -1,6 +1,8 @@
+# yamllint disable rule:line-length
+---
 name: Formula Tests
 
-on:
+'on':
   pull_request:
     paths:
       - 'Formula/**'
@@ -15,7 +17,7 @@ jobs:
   test:
     name: Test Formulas
     runs-on: ${{ matrix.os }}
-    
+
     strategy:
       matrix:
         os: [macos-13, macos-14]
@@ -23,16 +25,20 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        # yamllint disable-next-line rule:line-length
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955  # v4.3.0
 
       - name: Set up Homebrew
         id: set-up-homebrew
+        # yamllint disable-next-line rule:line-length
         uses: Homebrew/actions/setup-homebrew@b2da65092292aade9599608fc29415389641b3cb
 
       - name: Tap repository
         run: |
-          mkdir -p $(brew --repository)/Library/Taps/calebsargeant
-          ln -s $GITHUB_WORKSPACE $(brew --repository)/Library/Taps/calebsargeant/homebrew-tap
+          brew_repo="$(brew --repository)"
+          mkdir -p "$brew_repo/Library/Taps/calebsargeant"
+          ln -s "$GITHUB_WORKSPACE" \
+            "$brew_repo/Library/Taps/calebsargeant/homebrew-tap"
 
       - name: Install and test formulas
         run: |
@@ -40,27 +46,27 @@ jobs:
           for formula in Formula/*.rb; do
             if [ -f "$formula" ]; then
               formula_name=$(basename "$formula" .rb)
-              
+
               # Skip example formula
               if [ "$formula_name" = "example-tool" ]; then
                 echo "Skipping example formula: $formula_name"
                 continue
               fi
-              
+
               echo "Testing $formula_name..."
-              
+
               # Install formula
               brew install --build-from-source "$formula_name" || {
                 echo "Failed to install $formula_name"
                 exit 1
               }
-              
+
               # Run formula tests
               brew test "$formula_name" || {
                 echo "Tests failed for $formula_name"
                 exit 1
               }
-              
+
               # Uninstall to clean up
               brew uninstall "$formula_name"
             fi

@@ -1,6 +1,8 @@
+# yamllint disable rule:line-length
+---
 name: Auto Update Formulas
 
-on:
+'on':
   schedule:
     # Run daily at 02:00 UTC
     - cron: '0 2 * * *'
@@ -14,104 +16,125 @@ jobs:
   update:
     name: Check for Updates
     runs-on: macos-latest
-    
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        # yamllint disable-next-line rule:line-length
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955  # v4.3.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Homebrew
+        # yamllint disable-next-line rule:line-length
         uses: Homebrew/actions/setup-homebrew@b2da65092292aade9599608fc29415389641b3cb
 
       - name: Configure Git
         run: |
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.email \
+            "github-actions[bot]@users.noreply.github.com"
 
       - name: Tap repository
         run: |
-          mkdir -p $(brew --repository)/Library/Taps/calebsargeant
-          ln -s $GITHUB_WORKSPACE $(brew --repository)/Library/Taps/calebsargeant/homebrew-tap
+          brew_repo="$(brew --repository)"
+          mkdir -p "$brew_repo/Library/Taps/calebsargeant"
+          ln -s "$GITHUB_WORKSPACE" \
+            "$brew_repo/Library/Taps/calebsargeant/homebrew-tap"
 
       - name: Check for formula updates
         id: check-updates
         run: |
           set -e
           updated_formulas=""
-          
+
           for formula in Formula/*.rb; do
             if [ -f "$formula" ]; then
               formula_name=$(basename "$formula" .rb)
-              
+
               # Skip example formula
               if [ "$formula_name" = "example-tool" ]; then
                 echo "Skipping example formula: $formula_name"
                 continue
               fi
-              
+
               echo "Checking for updates to $formula_name..."
-              
+
               # Attempt to update using brew livecheck (JSON) and bump-formula-pr
-              json_output=$(brew livecheck --json --formula "$formula_name" 2>/dev/null || echo "[]")
-              is_outdated=$(echo "$json_output" | python3 - "$formula_name" <<'PY'
-import sys, json
-try:
-    data = json.load(sys.stdin)
-except Exception:
-    print("false"); sys.exit(0)
-if isinstance(data, dict):
-    data = [data]
+              json_output=$(
+                brew livecheck --json --formula "$formula_name" 2>/dev/null || echo "[]"
+              )
+              is_outdated=$(
+                JSON="$json_output" python3 - <<'PY'
+          import os, sys, json
+          try:
+              data = json.loads(os.environ.get('JSON', '[]'))
+          except Exception:
+              print("false"); sys.exit(0)
+          if isinstance(data, dict):
+              data = [data]
 
-def outdated(item):
-    s = (item.get('status') or item.get('livecheck',{}).get('status') or '').lower()
-    if s == 'outdated':
-        return True
-    cur = item.get('version') or item.get('current')
-    latest = item.get('latest') or item.get('newer_version') or item.get('latest_version')
-    return (cur and latest and str(cur) != str(latest))
+          def outdated(item):
+              s = (
+                  item.get('status')
+                  or item.get('livecheck', {}).get('status')
+                  or ''
+              ).lower()
+              if s == 'outdated':
+                  return True
+              cur = item.get('version') or item.get('current')
+              latest = (
+                  item.get('latest')
+                  or item.get('newer_version')
+                  or item.get('latest_version')
+              )
+              return (cur and latest and str(cur) != str(latest))
 
-print('true' if any(outdated(it) for it in data) else 'false')
-PY
-)
+          print('true' if any(outdated(it) for it in data) else 'false')
+          PY
+              )
               if [ "$is_outdated" = "true" ]; then
                 echo "Update available for $formula_name"
-                
+
                 # Try to bump the formula
-                brew bump-formula-pr --no-browse --no-fork --write-only "$formula_name" || {
+                brew bump-formula-pr \
+                  --no-browse \
+                  --no-fork \
+                  --write-only \
+                  "$formula_name" || {
                   echo "Failed to auto-update $formula_name, may require manual intervention"
                   continue
                 }
-                
+
                 updated_formulas="${updated_formulas}${formula_name} "
               else
                 echo "$formula_name is up to date"
               fi
             fi
           done
-          
-          echo "updated=$updated_formulas" >> $GITHUB_OUTPUT
+
+          echo "updated=$updated_formulas" >> "$GITHUB_OUTPUT"
 
       - name: Create Pull Request
         if: steps.check-updates.outputs.updated != ''
-        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
+        # yamllint disable-next-line rule:line-length
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c  # v6.1.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: auto-update formulas"
           title: "chore: Auto-update formulas"
           body: |
             ## Auto-generated Formula Updates
-            
+
             This PR was automatically created by the auto-update workflow.
-            
+
             **Updated formulas**: ${{ steps.check-updates.outputs.updated }}
-            
+
             ### Checklist
             - [x] Formulas updated with latest versions
             - [x] SHA256 checksums updated
             - [ ] Manual review required
             - [ ] Tests pass
-            
+
             Please review and merge if tests pass.
           branch: auto-update-formulas
           delete-branch: true

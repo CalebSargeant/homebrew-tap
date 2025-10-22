@@ -1,6 +1,8 @@
+# yamllint disable rule:line-length
+---
 name: Update SHA256 Checksums
 
-on:
+'on':
   workflow_dispatch:
     inputs:
       formula:
@@ -16,23 +18,28 @@ jobs:
   update-checksums:
     name: Update SHA256 Checksums
     runs-on: macos-latest
-    
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        # yamllint disable-next-line rule:line-length
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955  # v4.3.0
 
       - name: Set up Homebrew
+        # yamllint disable-next-line rule:line-length
         uses: Homebrew/actions/setup-homebrew@b2da65092292aade9599608fc29415389641b3cb
 
       - name: Configure Git
         run: |
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.email \
+            "github-actions[bot]@users.noreply.github.com"
 
       - name: Tap repository
         run: |
-          mkdir -p $(brew --repository)/Library/Taps/calebsargeant
-          ln -s $GITHUB_WORKSPACE $(brew --repository)/Library/Taps/calebsargeant/homebrew-tap
+          brew_repo="$(brew --repository)"
+          mkdir -p "$brew_repo/Library/Taps/calebsargeant"
+          ln -s "$GITHUB_WORKSPACE" \
+            "$brew_repo/Library/Taps/calebsargeant/homebrew-tap"
 
       - name: Update checksums
         id: update
@@ -40,49 +47,58 @@ jobs:
           set -e
           updated=""
           formula_input="${{ github.event.inputs.formula }}"
-          
+
+          # Build candidate list
           if [ -n "$formula_input" ]; then
-            # Update specific formula
-            formulas="Formula/${formula_input}.rb"
+            candidates=("Formula/${formula_input}.rb")
           else
-            # Update all formulas
-            formulas="Formula/*.rb"
+            shopt -s nullglob
+            candidates=(Formula/*.rb)
           fi
-          
-          for formula in $formulas; do
+
+          for formula in "${candidates[@]}"; do
             if [ -f "$formula" ]; then
               formula_name=$(basename "$formula" .rb)
-              
+
               # Skip example formula
               if [ "$formula_name" = "example-tool" ]; then
                 echo "Skipping example formula: $formula_name"
                 continue
               fi
-              
+
               echo "Updating checksum for $formula_name..."
-              
+
               # Fetch the formula and compute SHA256 from the cached artifact
               if brew fetch --force --formula "$formula_name"; then
                 # Try to locate the downloaded file in the cache
-                cache_candidates=$(brew --cache --formula "$formula_name" 2>/dev/null || true)
+                mapfile -t cache_candidates < <(
+                  brew --cache --formula "$formula_name" 2>/dev/null || true
+                )
                 artifact=""
-                for p in $cache_candidates; do
+                for p in "${cache_candidates[@]}"; do
                   if [ -f "$p" ]; then artifact="$p"; fi
                 done
                 if [ -z "$artifact" ]; then
-                  artifact=$(find "$(brew --cache)/downloads" -type f -name "*${formula_name}*" -print0 2>/dev/null | xargs -0 ls -t 2>/dev/null | head -n1)
+                  artifact=$(
+                    find "$(brew --cache)/downloads" \
+                      -type f \
+                      -name "*${formula_name}*" \
+                      -print0 2>/dev/null \
+                    | xargs -0 ls -t 2>/dev/null \
+                    | head -n1
+                  )
                 fi
                 if [ -n "$artifact" ] && [ -f "$artifact" ]; then
                   new_sha=$(shasum -a 256 "$artifact" | awk '{print $1}')
                 else
                   new_sha=""
                 fi
-                
+
                 if [ -n "$new_sha" ]; then
                   # Update the formula file with new SHA256
                   sed -i.bak "s/sha256 \"[^\"]*\"/sha256 \"$new_sha\"/" "$formula"
                   rm -f "${formula}.bak"
-                  
+
                   # Verify the change
                   if git diff --quiet "$formula"; then
                     echo "No changes needed for $formula_name"
@@ -96,32 +112,33 @@ jobs:
               else
                 echo "Failed to fetch $formula_name"
               fi
-              
+
               rm -f fetch_output.txt
             fi
           done
-          
-          echo "updated=$updated" >> $GITHUB_OUTPUT
+
+          echo "updated=$updated" >> "$GITHUB_OUTPUT"
 
       - name: Create Pull Request
         if: steps.update.outputs.updated != ''
-        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0
+        # yamllint disable-next-line rule:line-length
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c  # v6.1.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: update SHA256 checksums"
           title: "chore: Update SHA256 checksums"
           body: |
             ## SHA256 Checksum Updates
-            
+
             This PR updates SHA256 checksums for formulas.
-            
+
             **Updated formulas**: ${{ steps.update.outputs.updated }}
-            
+
             ### Checklist
             - [x] SHA256 checksums updated
             - [ ] Manual review required
             - [ ] Tests pass
-            
+
             Please review and merge if tests pass.
           branch: update-checksums
           delete-branch: true
