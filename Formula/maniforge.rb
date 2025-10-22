@@ -5,20 +5,20 @@ class Maniforge < Formula
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/calebsargeant/maniforge/releases/download/v1.0.0/maniforge-macos-arm64"
-      sha256 "" # Will be calculated from release binary
+      url "https://github.com/calebsargeant/maniforge/releases/download/v1.1.1/maniforge-macos-arm64"
+      sha256 "285983d6ca0b15768b9053d886f5bda6394be5ee6455de8d12aef7b176e45629" # Will be calculated from release binary
     else
-      url "https://github.com/calebsargeant/maniforge/releases/download/v1.0.0/maniforge-macos-x86_64"
+      url "https://github.com/calebsargeant/maniforge/releases/download/v1.1.1/maniforge-macos-x86_64"
       sha256 "" # Will be calculated from release binary
     end
   end
 
   on_linux do
     if Hardware::CPU.arm?
-      url "https://github.com/calebsargeant/maniforge/releases/download/v1.0.0/maniforge-linux-arm64"
+      url "https://github.com/calebsargeant/maniforge/releases/download/v1.1.1/maniforge-linux-arm64"
       sha256 "" # Will be calculated from release binary
     else
-      url "https://github.com/calebsargeant/maniforge/releases/download/v1.0.0/maniforge-linux-x86_64"
+      url "https://github.com/calebsargeant/maniforge/releases/download/v1.1.1/maniforge-linux-x86_64"
       sha256 "" # Will be calculated from release binary
     end
   end
