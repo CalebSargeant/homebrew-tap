@@ -4,7 +4,27 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/CalebSargeant/homebrew-tap/workflows/CI/badge.svg)](https://github.com/CalebSargeant/homebrew-tap/actions)
 
-Centralised Homebrew tap for various CLI tools, with automated updates and best practices.
+<!-- Quality & Security Overview -->
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=CalebSargeant_homebrew-tap&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=CalebSargeant_homebrew-tap)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=CalebSargeant_homebrew-tap&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=CalebSargeant_homebrew-tap)
+[![Known Vulnerabilities](https://snyk.io/test/github/CalebSargeant/infra/badge.svg)](https://snyk.io/test/github/CalebSargeant/infra)
+
+<!-- Code Quality & Maintainability -->
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=CalebSargeant_homebrew-tap&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=CalebSargeant_homebrew-tap)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=CalebSargeant_homebrew-tap&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=CalebSargeant_homebrew-tap)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=CalebSargeant_homebrew-tap&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=CalebSargeant_homebrew-tap)
+
+<!-- Code Metrics -->
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=CalebSargeant_homebrew-tap&metric=coverage)](https://sonarcloud.io/summary/new_code?id=CalebSargeant_homebrew-tap)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=CalebSargeant_homebrew-tap&metric=bugs)](https://sonarcloud.io/summary/new_code?id=CalebSargeant_homebrew-tap)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=CalebSargeant_homebrew-tap&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=CalebSargeant_homebrew-tap)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=CalebSargeant_homebrew-tap&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=CalebSargeant_homebrew-tap)
+
+<!-- Project Stats -->
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=CalebSargeant_homebrew-tap&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=CalebSargeant_homebrew-tap)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=CalebSargeant_homebrew-tap&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=CalebSargeant_homebrew-tap)
+
+A Centralised Homebrew tap for various tools, with automated updates and best practices.
 
 ## Installation
 

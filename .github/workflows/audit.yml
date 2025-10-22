@@ -1,6 +1,8 @@
+# yamllint disable rule:line-length
+---
 name: Formula Audit
 
-on:
+'on':
   pull_request:
     paths:
       - 'Formula/**'
@@ -15,19 +17,23 @@ jobs:
   audit:
     name: Audit Formulas
     runs-on: macos-latest
-    
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        # yamllint disable-next-line rule:line-length
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955  # v4.3.0
 
       - name: Set up Homebrew
         id: set-up-homebrew
+        # yamllint disable-next-line rule:line-length
         uses: Homebrew/actions/setup-homebrew@b2da65092292aade9599608fc29415389641b3cb
 
       - name: Tap repository
         run: |
-          mkdir -p $(brew --repository)/Library/Taps/calebsargeant
-          ln -s $GITHUB_WORKSPACE $(brew --repository)/Library/Taps/calebsargeant/homebrew-tap
+          brew_repo="$(brew --repository)"
+          mkdir -p "$brew_repo/Library/Taps/calebsargeant"
+          ln -s "$GITHUB_WORKSPACE" \
+            "$brew_repo/Library/Taps/calebsargeant/homebrew-tap"
 
       - name: Run brew audit
         run: |
