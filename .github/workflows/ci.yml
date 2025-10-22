@@ -80,7 +80,7 @@ jobs:
 
       - name: Lint Markdown files
         # yamllint disable-next-line rule:line-length
-        uses: DavidAnson/markdownlint-cli2-action@b4c9feab76d8025d1e83c653fa3990936df0e6c8  # v16.0.0
+        uses: DavidAnson/markdownlint-cli2-action@992badcdf24e3b8eb7e87ff9287fe931bcb00c6e  # v20.0.0
         with:
           globs: '**/*.md'
           config: '.markdownlint.json'
