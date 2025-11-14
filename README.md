@@ -52,16 +52,35 @@ brew install <formula-name>
 
 | Tool | Description | Version | Install Command |
 |------|-------------|---------|-----------------|
-| example-tool | Example CLI tool template | 1.0.0 | `brew install example-tool` |
+| transcribe | Video/audio transcription with auto-watch, OpenAI summarization, and Slack notifications | 1.0.5 | `brew install transcribe` |
+| maniforge | Terraform-like tool for managing Kubernetes applications | 1.2.0 | `brew install maniforge` |
 
 ## Usage Examples
 
-### Example Tool
+### Transcribe
 
 ```bash
-# After installation
-example-tool --version
-example-tool --help
+# Configure with API keys
+transcribe config
+
+# Transcribe a video file
+transcribe video.mp4
+
+# Watch a directory for new videos
+transcribe watch ~/Movies
+
+# Setup as background daemon
+transcribe setup-daemon
+```
+
+### Maniforge
+
+```bash
+# Deploy Kubernetes manifests
+maniforge apply -f manifests/
+
+# Check deployment status
+maniforge status
 ```
 
 ## Development
