@@ -1,26 +1,26 @@
 class Transcribe < Formula
   desc "Video/audio transcription with auto-watch, OpenAI summarization, and Slack notifications"
   homepage "https://github.com/calebsargeant/transcribe"
-  version "1.0.6"
+  version "1.0.7"
   license "MIT"
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/calebsargeant/transcribe/releases/download/v1.0.6/transcribe-macos-arm64"
-      sha256 "e3bf8eab20ea0db4a319b5fcc2c0e69dc994dccfaf921b9ee542d91f7b9d3737"
+      url "https://github.com/calebsargeant/transcribe/releases/download/v1.0.7/transcribe-macos-arm64"
+      sha256 "8616d303460199aad5ad0c13d5143255336071ae89371c33aaf7129e01e70e3e"
     else
-      url "https://github.com/calebsargeant/transcribe/releases/download/v1.0.6/transcribe-macos-x86_64"
-      sha256 "8f5bc1d65e2ef915be679ee1e4fc7a0cb4b0a44d2bad2c354708f5add370671c"
+      url "https://github.com/calebsargeant/transcribe/releases/download/v1.0.7/transcribe-macos-x86_64"
+      sha256 "96e28532731957072a27d8faa9b4a3329b9ce5521a0476d7810a3d97102da7e9"
     end
   end
 
   on_linux do
     if Hardware::CPU.arm?
-      url "https://github.com/calebsargeant/transcribe/releases/download/v1.0.6/transcribe-linux-arm64"
-      sha256 "9af07f2b0030c7a3d9f80dbabc8a35fe04524a8a6176781c51157a65567a9642"
+      url "https://github.com/calebsargeant/transcribe/releases/download/v1.0.7/transcribe-linux-arm64"
+      sha256 "05aa0d82eee776e4eaf0a8cd5d78637519bc2636c53ac464d9a2656e1094a84b"
     else
-      url "https://github.com/calebsargeant/transcribe/releases/download/v1.0.6/transcribe-linux-x86_64"
-      sha256 "f18310e7d9133df49139d26ea7199045181ededb2ffd1b593ecffd712e7be2d5"
+      url "https://github.com/calebsargeant/transcribe/releases/download/v1.0.7/transcribe-linux-x86_64"
+      sha256 "ffbbb2c17db2a80d06b5e55a1efff149dd00cc84c37bf12fbd4844362598ec35"
     end
   end
 
