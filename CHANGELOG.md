@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.3.0 (2025-11-18)
+
+### Features
+
+- Add optional version input for update-sha256 workflow
+  ([`9d0b4a8`](https://github.com/CalebSargeant/homebrew-tap/commit/9d0b4a8302e2c0827cde9ba6dcf34833b37f3813))
+
+
 ## v1.2.0 (2025-11-14)
 
 ### Build System
