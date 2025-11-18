@@ -72,17 +72,16 @@ jobs:
 
               contents = File.read(path)
 
-              # If a version was provided and this is the matching formula, update its version field
               if version_arg && !version_arg.empty? && formula_name == 'transcribe'
-                contents = contents.sub(/version "[^"]+"/, "version \"#{version_arg}\"")
+                contents = contents.sub(/version "[^"]+"/, %(version "#{version_arg}"))
               end
 
               contents = contents.gsub(/(url "([^"]+)")\n(\s*sha256 ")([^"]*)"/) do
-                url = Regexp.last_match(2)
+                url        = Regexp.last_match(2)
                 sha_prefix = Regexp.last_match(3)
-                old_sha = Regexp.last_match(4)
+                old_sha    = Regexp.last_match(4)
 
-                cmd = "curl -sSL \\#{Shellwords.escape(url)} | shasum -a 256"
+                cmd = "curl -sSL #{Shellwords.escape(url)} | shasum -a 256"
                 puts "  Computing SHA256 for #{url}..."
                 stdout, status = Open3.capture2('bash', '-lc', cmd)
 
@@ -102,15 +101,13 @@ jobs:
                   Regexp.last_match(0)
                 else
                   puts "  Updated SHA: #{old_sha} -> #{new_sha}"
-                  "
-#{$1}\n#{sha_prefix}#{new_sha}\""
+                  "#{Regexp.last_match(1)}\n#{sha_prefix}#{new_sha}\""
                 end
               end
 
               File.write(path, contents)
               RUBY
 
-              # Track if this formula changed
               if git diff --quiet "$formula"; then
                 echo "No changes needed for $formula_name"
               else
