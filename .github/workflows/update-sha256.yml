@@ -9,6 +9,10 @@ name: Update SHA256 Checksums
         description: 'Formula name to update (leave empty for all)'
         required: false
         type: string
+      version:
+        description: 'Version string (e.g. 2.0.0) to set on matching formulas (optional)'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -36,6 +40,7 @@ jobs:
           set -e
           updated=""
           formula_input="${{ github.event.inputs.formula }}"
+          version_input="${{ github.event.inputs.version }}"
 
           # Build candidate list
           if [ -n "$formula_input" ]; then
@@ -57,12 +62,20 @@ jobs:
 
               echo "Updating checksums in $formula..."
 
-              ruby <<'RUBY' "$formula"
+              ruby <<'RUBY' "$formula" "$formula_name" "$version_input"
               require 'open3'
               require 'shellwords'
 
-              path = ARGV[0]
+              path         = ARGV[0]
+              formula_name = ARGV[1]
+              version_arg  = ARGV[2]
+
               contents = File.read(path)
+
+              # If a version was provided and this is the matching formula, update its version field
+              if version_arg && !version_arg.empty? && formula_name == 'transcribe'
+                contents = contents.sub(/version "[^"]+"/, "version \"#{version_arg}\"")
+              end
 
               contents = contents.gsub(/(url "([^"]+)")\n(\s*sha256 ")([^"]*)"/) do
                 url = Regexp.last_match(2)
