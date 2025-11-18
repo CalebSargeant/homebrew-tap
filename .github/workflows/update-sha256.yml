@@ -24,22 +24,11 @@ jobs:
         # yamllint disable-next-line rule:line-length
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
 
-      - name: Set up Homebrew
-        # yamllint disable-next-line rule:line-length
-        uses: Homebrew/actions/setup-homebrew@b2da65092292aade9599608fc29415389641b3cb
-
       - name: Configure Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email \
             "github-actions[bot]@users.noreply.github.com"
-
-      - name: Tap repository
-        run: |
-          brew_repo="$(brew --repository)"
-          mkdir -p "$brew_repo/Library/Taps/calebsargeant"
-          ln -s "$GITHUB_WORKSPACE" \
-            "$brew_repo/Library/Taps/calebsargeant/homebrew-tap"
 
       - name: Update checksums
         id: update
@@ -66,54 +55,55 @@ jobs:
                 continue
               fi
 
-              echo "Updating checksum for $formula_name..."
+              echo "Updating checksums in $formula..."
 
-              # Fetch the formula and compute SHA256 from the cached artifact
-              if brew fetch --force --formula "$formula_name"; then
-                # Try to locate the downloaded file in the cache
-                mapfile -t cache_candidates < <(
-                  brew --cache --formula "$formula_name" 2>/dev/null || true
-                )
-                artifact=""
-                for p in "${cache_candidates[@]}"; do
-                  if [ -f "$p" ]; then artifact="$p"; fi
-                done
-                if [ -z "$artifact" ]; then
-                  artifact=$(
-                    find "$(brew --cache)/downloads" \
-                      -type f \
-                      -name "*${formula_name}*" \
-                      -print0 2>/dev/null \
-                    | xargs -0 ls -t 2>/dev/null \
-                    | head -n1
-                  )
-                fi
-                if [ -n "$artifact" ] && [ -f "$artifact" ]; then
-                  new_sha=$(shasum -a 256 "$artifact" | awk '{print $1}')
+              ruby <<'RUBY' "$formula"
+              require 'open3'
+              require 'shellwords'
+
+              path = ARGV[0]
+              contents = File.read(path)
+
+              contents = contents.gsub(/(url "([^"]+)")\n(\s*sha256 ")([^"]*)"/) do
+                url = Regexp.last_match(2)
+                sha_prefix = Regexp.last_match(3)
+                old_sha = Regexp.last_match(4)
+
+                cmd = "curl -sSL \\#{Shellwords.escape(url)} | shasum -a 256"
+                puts "  Computing SHA256 for #{url}..."
+                stdout, status = Open3.capture2('bash', '-lc', cmd)
+
+                unless status.success?
+                  warn "  Failed to compute SHA for #{url}"
+                  next Regexp.last_match(0)
+                end
+
+                new_sha = stdout.split.first
+                if new_sha.nil? || new_sha.empty?
+                  warn "  Empty SHA for #{url}"
+                  next Regexp.last_match(0)
+                end
+
+                if new_sha == old_sha
+                  puts "  SHA unchanged for #{url}"
+                  Regexp.last_match(0)
                 else
-                  new_sha=""
-                fi
+                  puts "  Updated SHA: #{old_sha} -> #{new_sha}"
+                  "
+#{$1}\n#{sha_prefix}#{new_sha}\""
+                end
+              end
 
-                if [ -n "$new_sha" ]; then
-                  # Update the formula file with new SHA256
-                  sed -i.bak "s/sha256 \"[^\"]*\"/sha256 \"$new_sha\"/" "$formula"
-                  rm -f "${formula}.bak"
+              File.write(path, contents)
+              RUBY
 
-                  # Verify the change
-                  if git diff --quiet "$formula"; then
-                    echo "No changes needed for $formula_name"
-                  else
-                    echo "Updated $formula_name with SHA256: $new_sha"
-                    updated="${updated}${formula_name} "
-                  fi
-                else
-                  echo "Could not extract SHA256 for $formula_name"
-                fi
+              # Track if this formula changed
+              if git diff --quiet "$formula"; then
+                echo "No changes needed for $formula_name"
               else
-                echo "Failed to fetch $formula_name"
+                echo "Updated checksums for $formula_name"
+                updated="${updated}${formula_name} "
               fi
-
-              rm -f fetch_output.txt
             fi
           done
 
