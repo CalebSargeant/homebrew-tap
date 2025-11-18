@@ -4,11 +4,13 @@ This document describes the architecture and structure of the CalebSargeant/home
 
 ## Overview
 
-This is a centralized Homebrew tap repository following industry best practices for maintaining and distributing CLI tools via Homebrew. The repository is designed to be automated, well-documented, and easy to maintain.
+This is a centralized Homebrew tap repository following industry best practices for
+maintaining and distributing CLI tools via Homebrew. The repository is designed to be
+automated, well-documented, and easy to maintain.
 
 ## Directory Structure
 
-```
+```text
 homebrew-tap/
 ├── .github/                    # GitHub-specific configurations
 │   ├── workflows/              # GitHub Actions workflows

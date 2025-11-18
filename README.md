@@ -52,7 +52,7 @@ brew install <formula-name>
 
 | Tool | Description | Version | Install Command |
 |------|-------------|---------|-----------------|
-| transcribe | Video/audio transcription with auto-watch, OpenAI summarization, and Slack notifications | 1.0.5 | `brew install transcribe` |
+| transcribe | Video/audio transcription with auto-watch, OpenAI summarization, and Slack notifications | 1.0.8 | `brew install transcribe` |
 | maniforge | Terraform-like tool for managing Kubernetes applications | 1.2.0 | `brew install maniforge` |
 
 ## Usage Examples

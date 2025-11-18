@@ -17,10 +17,10 @@
 
 <!-- If this PR involves a formula, fill out the following -->
 
-- **Formula name**: 
-- **Version**: 
-- **Homepage**: 
-- **License**: 
+- **Formula name**:
+- **Version**:
+- **Homepage**:
+- **License**:
 
 ## Checklist
 
@@ -47,7 +47,8 @@ brew audit --strict my-tool
 ```
 
 **Test output**:
-```
+
+```text
 <!-- Paste relevant test output here -->
 ```
 
