@@ -3,8 +3,8 @@ class Chargate < Formula
 
   desc "Net-new security and lint gate with a global git-hooks installer"
   homepage "https://github.com/MagmaMoose/chargate"
-  url "https://github.com/MagmaMoose/chargate/archive/refs/tags/v2.9.0.tar.gz"
-  sha256 "d8ffb2bae8ebd1af0f5e1f9cc87626fe3742d8fa8155e43ae156db55de02ef15"
+  url "https://github.com/MagmaMoose/chargate/archive/refs/tags/v2.10.0.tar.gz"
+  sha256 "e6f2e1b219c6db1b1a5690909992e90f5a8b6c5212dbb1cbb8149f22401717b3"
   license "MIT"
 
   livecheck do
