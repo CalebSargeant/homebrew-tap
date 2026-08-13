@@ -17,11 +17,11 @@ jobs:
     steps:
       - name: Checkout
         # yamllint disable-next-line rule:line-length
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Set up Homebrew
         # yamllint disable-next-line rule:line-length
-        uses: Homebrew/actions/setup-homebrew@b2da65092292aade9599608fc29415389641b3cb
+        uses: Homebrew/actions/setup-homebrew@5037c6f1012cc5ea0b9f03fedbaf9955ed9e51e0
 
       - name: Tap repository
         run: |
@@ -54,11 +54,11 @@ jobs:
     steps:
       - name: Checkout
         # yamllint disable-next-line rule:line-length
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Set up Homebrew
         # yamllint disable-next-line rule:line-length
-        uses: Homebrew/actions/setup-homebrew@b2da65092292aade9599608fc29415389641b3cb
+        uses: Homebrew/actions/setup-homebrew@5037c6f1012cc5ea0b9f03fedbaf9955ed9e51e0
 
       - name: Check formula style
         run: |
@@ -76,11 +76,11 @@ jobs:
     steps:
       - name: Checkout
         # yamllint disable-next-line rule:line-length
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Lint Markdown files
         # yamllint disable-next-line rule:line-length
-        uses: DavidAnson/markdownlint-cli2-action@07035fd053f7be764496c0f8d8f9f41f98305101  # v22.0.0
+        uses: DavidAnson/markdownlint-cli2-action@21c1be1b93ad9ed58fa840aacc3f279cde2a72ff  # v24.2.0
         with:
           globs: '**/*.md'
           config: '.markdownlint.json'
@@ -98,11 +98,11 @@ jobs:
     steps:
       - name: Checkout
         # yamllint disable-next-line rule:line-length
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Set up Homebrew
         # yamllint disable-next-line rule:line-length
-        uses: Homebrew/actions/setup-homebrew@b2da65092292aade9599608fc29415389641b3cb
+        uses: Homebrew/actions/setup-homebrew@5037c6f1012cc5ea0b9f03fedbaf9955ed9e51e0
 
       - name: Tap repository
         run: |
