@@ -9,10 +9,6 @@ name: Update SHA256 Checksums
         description: 'Formula name to update (leave empty for all)'
         required: false
         type: string
-      version:
-        description: 'Version string (e.g. 2.0.0) to set on matching formulas (optional)'
-        required: false
-        type: string
 
 permissions:
   contents: write
@@ -40,7 +36,6 @@ jobs:
           set -e
           updated=""
           formula_input="${{ github.event.inputs.formula }}"
-          version_input="${{ github.event.inputs.version }}"
 
           # Build candidate list
           if [ -n "$formula_input" ]; then
@@ -62,51 +57,56 @@ jobs:
 
               echo "Updating checksums in $formula..."
 
-              ruby <<'RUBY' "$formula" "$formula_name" "$version_input"
-              require 'open3'
-              require 'shellwords'
+              # Checksums only: the release tag lives in each url, so bumping a
+              # formula to a new version is `brew bump-formula-pr` (auto-update.yml)
+              # or the upstream repo's own release job, not this workflow.
+              ruby - "$formula" <<'RUBY'
+          require 'open3'
+          require 'shellwords'
 
-              path         = ARGV[0]
-              formula_name = ARGV[1]
-              version_arg  = ARGV[2]
+          path = ARGV[0]
 
-              contents = File.read(path)
+          contents = File.read(path)
 
-              if version_arg && !version_arg.empty? && formula_name == 'transcribe'
-                contents = contents.sub(/version "[^"]+"/, %(version "#{version_arg}"))
-              end
+          # The sha256 need not sit immediately under its url: maniforge.rb puts a
+          # "# SHA256 calculated from release binary" comment between them, and
+          # demanding adjacency silently skipped that formula on every run.
+          pattern = /(url "([^"]+)")\n((?:[ \t]*(?:#[^\n]*)?\n)*)([ \t]*sha256 ")([^"]*)"/
 
-              contents = contents.gsub(/(url "([^"]+)")\n(\s*sha256 ")([^"]*)"/) do
-                url        = Regexp.last_match(2)
-                sha_prefix = Regexp.last_match(3)
-                old_sha    = Regexp.last_match(4)
+          contents = contents.gsub(pattern) do
+            whole      = Regexp.last_match(0)
+            url_stanza = Regexp.last_match(1)
+            url        = Regexp.last_match(2)
+            interlude  = Regexp.last_match(3)
+            sha_prefix = Regexp.last_match(4)
+            old_sha    = Regexp.last_match(5)
 
-                cmd = "curl -sSL #{Shellwords.escape(url)} | shasum -a 256"
-                puts "  Computing SHA256 for #{url}..."
-                stdout, status = Open3.capture2('bash', '-lc', cmd)
+            cmd = "curl -sSL #{Shellwords.escape(url)} | shasum -a 256"
+            puts "  Computing SHA256 for #{url}..."
+            stdout, status = Open3.capture2('bash', '-lc', cmd)
 
-                unless status.success?
-                  warn "  Failed to compute SHA for #{url}"
-                  next Regexp.last_match(0)
-                end
+            unless status.success?
+              warn "  Failed to compute SHA for #{url}"
+              next whole
+            end
 
-                new_sha = stdout.split.first
-                if new_sha.nil? || new_sha.empty?
-                  warn "  Empty SHA for #{url}"
-                  next Regexp.last_match(0)
-                end
+            new_sha = stdout.split.first
+            if new_sha.nil? || new_sha.empty?
+              warn "  Empty SHA for #{url}"
+              next whole
+            end
 
-                if new_sha == old_sha
-                  puts "  SHA unchanged for #{url}"
-                  Regexp.last_match(0)
-                else
-                  puts "  Updated SHA: #{old_sha} -> #{new_sha}"
-                  "#{Regexp.last_match(1)}\n#{sha_prefix}#{new_sha}\""
-                end
-              end
+            if new_sha == old_sha
+              puts "  SHA unchanged for #{url}"
+              whole
+            else
+              puts "  Updated SHA: #{old_sha} -> #{new_sha}"
+              "#{url_stanza}\n#{interlude}#{sha_prefix}#{new_sha}\""
+            end
+          end
 
-              File.write(path, contents)
-              RUBY
+          File.write(path, contents)
+          RUBY
 
               if git diff --quiet "$formula"; then
                 echo "No changes needed for $formula_name"
