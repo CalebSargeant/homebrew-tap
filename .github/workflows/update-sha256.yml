@@ -32,10 +32,24 @@ jobs:
 
       - name: Update checksums
         id: update
+        env:
+          # Passed as an env var, never interpolated into the script body. A
+          # `${{ ... }}` expansion is substituted into the shell source before
+          # bash parses it, so a formula name containing shell metacharacters
+          # would execute as code on a runner holding `contents: write`.
+          FORMULA_INPUT: ${{ github.event.inputs.formula }}
         run: |
           set -e
           updated=""
-          formula_input="${{ github.event.inputs.formula }}"
+          formula_input="$FORMULA_INPUT"
+
+          # The formula name becomes a path under Formula/, so keep it a bare
+          # name — no slashes, no leading dot, nothing that can walk out.
+          if [ -n "$formula_input" ] && \
+             [[ ! "$formula_input" =~ ^[A-Za-z0-9][A-Za-z0-9._+-]*$ ]]; then
+            echo "::error::Invalid formula name: $formula_input"
+            exit 1
+          fi
 
           # Build candidate list
           if [ -n "$formula_input" ]; then
