@@ -28,7 +28,7 @@ jobs:
 
       - name: Set up Homebrew
         # yamllint disable-next-line rule:line-length
-        uses: Homebrew/actions/setup-homebrew@b35a29a0f83ee8b8ca07b219fc8db3d7bb88ab49
+        uses: Homebrew/actions/setup-homebrew@a657b8b0cd35d0f65cce41fce9b24cf054b49869
 
       - name: Configure Git
         run: |
