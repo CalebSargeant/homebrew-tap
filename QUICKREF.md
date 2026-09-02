@@ -50,7 +50,7 @@ cd homebrew-tap
 git checkout -b add-my-tool
 
 # 3. Create formula from template
-cp Formula/example-tool.rb Formula/my-tool.rb
+cp Formula/tool.rb.example Formula/my-tool.rb
 
 # 4. Edit the formula
 vim Formula/my-tool.rb

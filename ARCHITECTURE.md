@@ -14,14 +14,19 @@ automated, well-documented, and easy to maintain.
 homebrew-tap/
 ├── .github/                    # GitHub-specific configurations
 │   ├── workflows/              # GitHub Actions workflows
-│   │   ├── audit.yml          # Formula auditing
+│   │   ├── auto-merge.yml     # Auto-merge for machine-generated PRs
 │   │   ├── auto-update.yml    # Automated formula updates
 │   │   ├── ci.yml             # Comprehensive CI pipeline
-│   │   ├── test.yml           # Formula testing
+│   │   ├── release.yml        # Diatreme release workflow
+│   │   ├── security.yml       # Chargate net-new security gating
+│   │   ├── semantic-release.yaml  # Semantic versioning on push to main
 │   │   └── update-sha256.yml  # Checksum updates
 │   └── pull_request_template.md  # PR template
 ├── Formula/                    # Homebrew formulas
-│   └── example-tool.rb        # Example formula template
+│   ├── chargate.rb            # Net-new security and lint gate
+│   ├── maniforge.rb           # Terraform-like Kubernetes app manager
+│   ├── transcribe.rb          # Video/audio transcription tool
+│   └── tool.rb.example        # Example formula template
 ├── .editorconfig              # Editor configuration for consistent formatting
 ├── .gitignore                 # Git ignore patterns
 ├── .markdownlint.json         # Markdown linting configuration
@@ -47,22 +52,13 @@ The `Formula/` directory contains all Homebrew formula definitions. Each formula
 
 ### 2. GitHub Actions Workflows
 
-#### audit.yml
-- **Purpose**: Validates formula syntax and style
-- **Triggers**: Pull requests, pushes to main, manual dispatch
+#### security.yml
+- **Purpose**: Net-new security and lint gating via the Chargate marketplace action
+- **Triggers**: Pull requests only
 - **Features**:
-  - Runs `brew audit --strict --online` on all formulas
-  - Checks formula style compliance
-  - Ensures formulas meet Homebrew standards
-
-#### test.yml
-- **Purpose**: Tests formula installation and functionality
-- **Triggers**: Pull requests, pushes to main, manual dispatch
-- **Features**:
-  - Tests on multiple macOS versions (macos-13, macos-14)
-  - Installs formulas from source
-  - Runs formula test blocks
-  - Skips example/template formulas
+  - Runs MegaLinter-backed Chargate on the PR diff (net-new findings only)
+  - Posts results as a PR comment authored by `Chargate[bot]`
+  - Uploads SARIF to GitHub Security tab
 
 #### ci.yml
 - **Purpose**: Comprehensive CI pipeline
@@ -89,6 +85,29 @@ The `Formula/` directory contains all Homebrew formula definitions. Each formula
   - Fetches correct checksums using `brew fetch`
   - Creates pull requests with updated checksums
   - Useful for security updates
+
+#### release.yml
+- **Purpose**: Diatreme release workflow (version bumps, GitHub Releases, optional image promotion)
+- **Triggers**: Pull requests (CI mode), pushes to main (release mode)
+- **Features**:
+  - Detects container builds automatically
+  - Creates versioned GitHub Releases on merge to main
+  - Supports gitversion, semantic-release-python, and semantic-release-npm
+
+#### semantic-release.yaml
+- **Purpose**: Semantic versioning via Conventional Commits
+- **Triggers**: Pushes to main, manual dispatch (with bump type selection)
+- **Features**:
+  - Determines version bump from commit messages
+  - Supports manual patch/minor/major override
+
+#### auto-merge.yml
+- **Purpose**: Enables GitHub native auto-merge for routine machine-generated PRs
+- **Triggers**: Pull requests matching bump/auto-update/Dependabot patterns
+- **Features**:
+  - Auto-merges formula version bumps and checksum PRs after all required checks pass
+  - Never bypasses branch protection or required reviews
+  - Restricted to same-repo PRs (forks excluded)
 
 ### 3. Configuration Files
 
@@ -169,7 +188,7 @@ Defines code ownership:
 ### 1. Creation
 ```bash
 # Create new formula from template
-cp Formula/example-tool.rb Formula/my-tool.rb
+cp Formula/tool.rb.example Formula/my-tool.rb
 # Edit with tool details
 ```
 
@@ -288,4 +307,4 @@ For questions or issues:
 
 ---
 
-Last updated: 2025-01-20
+Last updated: 2026-09-02
