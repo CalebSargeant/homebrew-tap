@@ -89,7 +89,7 @@ maniforge status
 ### Adding a New Formula
 
 1. Create a new Ruby file in the `Formula/` directory
-2. Follow the template structure from `Formula/example-tool.rb`
+2. Follow the template structure from `Formula/tool.rb.example`
 3. Test your formula locally:
 
 ```bash

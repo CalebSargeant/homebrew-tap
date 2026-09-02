@@ -15,16 +15,22 @@
     "url": "https://github.com/MagmaMoose/homebrew-tap.git"
   },
   "formulas": {
-    "example-tool": {
-      "description": "Example CLI tool template",
-      "homepage": "https://github.com/CalebSargeant/example-tool",
-      "version": "1.0.0",
-      "status": "template"
-    },
     "chargate": {
       "description": "Net-new security and lint gate with a global git-hooks installer",
       "homepage": "https://github.com/MagmaMoose/chargate",
-      "version": "2.0.0",
+      "version": "2.11.1",
+      "status": "active"
+    },
+    "maniforge": {
+      "description": "Terraform-like tool for managing Kubernetes applications",
+      "homepage": "https://github.com/calebsargeant/maniforge",
+      "version": "1.2.0",
+      "status": "active"
+    },
+    "transcribe": {
+      "description": "Video/audio transcription with auto-watch, OpenAI summarization, and Slack notifications",
+      "homepage": "https://github.com/calebsargeant/transcribe",
+      "version": "1.0.8",
       "status": "active"
     }
   },
